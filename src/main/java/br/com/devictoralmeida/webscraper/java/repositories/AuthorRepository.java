@@ -14,7 +14,7 @@ import java.util.Set;
 @Repository
 public interface AuthorRepository extends JpaRepository<Author, Long> {
     @Query("""
-                    SELECT NEW br.com.devictoralmeida.webscraper.java.dtos.AuthorNewsCountResponseDTO(
+                    SELECT NEW br.com.devictoralmeida.webscraper.java.dtos.response.AuthorNewsCountResponseDTO(
                         n.author.id,
                         n.author.name,
                         COUNT(n.id)
