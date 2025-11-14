@@ -16,4 +16,12 @@ public final class DateUtils {
         }
         return dateTime.format(FORMATTER);
     }
+
+    public static LocalDateTime parse(String dateTimeStr) {
+        if (dateTimeStr == null || dateTimeStr.isEmpty()) {
+            return null;
+        }
+        return LocalDateTime.parse(dateTimeStr, DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+    }
+    
 }

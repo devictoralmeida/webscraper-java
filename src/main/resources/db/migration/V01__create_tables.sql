@@ -14,6 +14,12 @@ CREATE SEQUENCE IF NOT EXISTS public.tb_author_id_seq
   CACHE 1
   NO CYCLE;
 
+CREATE TABLE tb_author
+(
+    id         BIGSERIAL PRIMARY KEY,
+    name       VARCHAR(150) NOT NULL,
+    created_at TIMESTAMP    NOT NULL DEFAULT NOW()
+);
 
 CREATE TABLE tb_news
 (
@@ -21,17 +27,11 @@ CREATE TABLE tb_news
     url        TEXT UNIQUE  NOT NULL,
     title      VARCHAR(150) NOT NULL,
     subtitle   VARCHAR(255) NULL DEFAULT NULL,
-    author_id  BIGSERIAL NULL DEFAULT NULL REFERENCES tb_author (id) ON DELETE SET NULL,
+    author_id  BIGINT NULL DEFAULT NULL,
     content    TEXT         NOT NULL,
     publish_at TIMESTAMP    NOT NULL,
-    created_at TIMESTAMP    NOT NULL DEFAULT NOW()
-);
-
-CREATE TABLE tb_author
-(
-    id         BIGSERIAL PRIMARY KEY,
-    name       VARCHAR(150) NOT NULL,
-    created_at TIMESTAMP    NOT NULL DEFAULT NOW()
+    created_at TIMESTAMP    NOT NULL DEFAULT NOW(),
+    CONSTRAINT fk_tbnews_tbauthor FOREIGN KEY (author_id) REFERENCES tb_author (id) ON DELETE SET NULL
 );
 
 CREATE INDEX idx_news_url ON tb_news (url);

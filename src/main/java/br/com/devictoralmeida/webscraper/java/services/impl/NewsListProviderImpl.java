@@ -1,6 +1,6 @@
 package br.com.devictoralmeida.webscraper.java.services.impl;
 
-import br.com.devictoralmeida.webscraper.java.entities.News;
+import br.com.devictoralmeida.webscraper.java.dtos.PartialNewsDTO;
 import br.com.devictoralmeida.webscraper.java.services.HttpClient;
 import br.com.devictoralmeida.webscraper.java.services.NewsListProvider;
 import br.com.devictoralmeida.webscraper.java.shared.Constants;
@@ -41,13 +41,10 @@ public class NewsListProviderImpl implements NewsListProvider {
     private String userAgent;
 
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    public List<News> fetchNewsList(int pageLimit) {
+    public List<PartialNewsDTO> fetchNewsList(int pageLimit) {
         // 1. Busca as notícias iniciais "queimadas" no HTML
-        List<News> initialNews = this.fetchInitialNewsFromHtml();
+        List<PartialNewsDTO> initialNews = this.fetchInitialNewsFromHtml();
 
         // 2. Verifica se o limite já foi atingido
         if (pageLimit <= initialNews.size()) {
@@ -57,31 +54,25 @@ public class NewsListProviderImpl implements NewsListProvider {
 
         // 3. Se precisar de mais, busca na API
         log.info("Buscando notícias adicionais na API para atingir o limite de {}", pageLimit);
-        List<News> apiNews = this.fetchApiNews();
+        List<PartialNewsDTO> apiNews = this.fetchApiNews();
 
         // 4. Combina, remove duplicatas (mantendo a ordem) e aplica o limite final
         // Usamos LinkedHashMap para manter a ordem e garantir URLs únicas
-        Map<String, News> uniqueNewsMap = new LinkedHashMap<>();
+        Map<String, PartialNewsDTO> uniqueNewsMap = new LinkedHashMap<>();
 
         // Adiciona as iniciais primeiro
         initialNews.forEach(news -> uniqueNewsMap.putIfAbsent(news.getUrl(), news));
         // Adiciona as da API (só as que não estiverem no mapa)
         apiNews.forEach(news -> uniqueNewsMap.putIfAbsent(news.getUrl(), news));
 
-        List<News> finalList = uniqueNewsMap.values().stream().limit(pageLimit).toList();
-
+        List<PartialNewsDTO> finalList = uniqueNewsMap.values().stream().limit(pageLimit).toList();
         log.info("Encontradas {} notícias únicas no total para processar.", finalList.size());
         return finalList;
     }
 
-    /**
-     * Raspa as notícias da página inicial (as ~14 que você identificou)
-     *
-     * @return Lista de Notícias parciais (URL e Título)
-     */
-    private List<News> fetchInitialNewsFromHtml() {
-        List<News> result = new ArrayList<>();
-        String initialPageUrl = this.baseUrl + "/mercados/"; // Monta a URL principal
+    private List<PartialNewsDTO> fetchInitialNewsFromHtml() {
+        List<PartialNewsDTO> result = new ArrayList<>();
+        String initialPageUrl = this.baseUrl + "/mercados/";
         log.info("Buscando lista de notícias iniciais do HTML: {}", initialPageUrl);
 
         try {
@@ -90,10 +81,11 @@ public class NewsListProviderImpl implements NewsListProvider {
                     .timeout(10000) // 10 segundos de timeout
                     .get();
 
-            // SELETOR CORRIGIDO: Removemos a busca por 'livenews'
-            String selector = "div[data-ds-component='card-xl'] h2 a, " +
-                    "div[data-ds-component='card-sm'] h2 a, " +
-                    "div.related-link a";
+            String selector = """
+                            div[data-ds-component='card-xl'] h2 a,
+                            div[data-ds-component='card-sm'] h2 a,
+                            div.related-link a
+                    """;
 
             for (Element link : doc.select(selector)) {
                 String url = link.attr("href");
@@ -114,23 +106,18 @@ public class NewsListProviderImpl implements NewsListProvider {
                     url = this.baseUrl + url;
                 }
 
-                result.add(new News(url, title));
+                result.add(new PartialNewsDTO(url, title));
             }
             log.info("Encontradas {} notícias iniciais no HTML.", result.size());
             return result;
 
         } catch (IOException e) {
             log.error("Falha ao raspar HTML inicial da página: {}", initialPageUrl, e);
-            return result; // Retorna lista vazia em caso de falha
+            return result;
         }
     }
 
-    /**
-     * Busca notícias da API POST (código que você já tinha)
-     *
-     * @return Lista de Notícias parciais (URL e Título)
-     */
-    private List<News> fetchApiNews() {
+    private List<PartialNewsDTO> fetchApiNews() {
         Map<String, Object> requestBody = Map.of(
                 "post_id", this.postIdMercados,
                 "categories", List.of(Constants.UM), //
@@ -146,13 +133,13 @@ public class NewsListProviderImpl implements NewsListProvider {
                 null
         );
 
-        List<News> result = new ArrayList<>();
+        List<PartialNewsDTO> result = new ArrayList<>();
         try {
             JsonNode root = this.objectMapper.readTree(jsonResponse);
             for (JsonNode node : root) {
                 String url = node.get("post_permalink").asText();
                 String title = node.get("post_title").asText();
-                result.add(new News(url, title));
+                result.add(new PartialNewsDTO(url, title));
             }
         } catch (Exception e) {
             log.error("Erro ao parsear JSON da API", e);

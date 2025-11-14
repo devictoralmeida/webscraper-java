@@ -39,7 +39,7 @@ public class News implements Serializable {
     @Column(name = "content", columnDefinition = "TEXT", nullable = false)
     private String content;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinColumn(name = "author_id", referencedColumnName = "id")
     private Author author;
 
@@ -52,15 +52,6 @@ public class News implements Serializable {
     public News(String url, String title) {
         this.url = url;
         this.title = title;
-    }
-
-    public News(String url, String title, String subtitle, String content, LocalDateTime publishDate, Author author) {
-        this.url = url;
-        this.title = title;
-        this.subtitle = subtitle;
-        this.content = content;
-        this.publishDate = publishDate;
-        this.author = author;
     }
 
     public News(PartialNewsDTO dto, String subtitle, String content, LocalDateTime publishDate, Author author) {
