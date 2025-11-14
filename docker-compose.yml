@@ -1,0 +1,13 @@
+version: '3'
+
+services:
+  postgres-db:
+    container_name: db_webscraper
+    image: postgres:16.9-alpine
+    environment:
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "postgres"
+      POSTGRES_DB: "db_webscraper"
+    ports:
+      - "5433:5432"
+    restart: always
