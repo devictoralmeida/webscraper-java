@@ -1,4 +1,4 @@
-package br.com.devictoralmeida.webscraper.java.dtos;
+package br.com.devictoralmeida.webscraper.java.dtos.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;

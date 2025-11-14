@@ -1,4 +1,4 @@
-package br.com.devictoralmeida.webscraper.java.dtos;
+package br.com.devictoralmeida.webscraper.java.dtos.response;
 
 import org.springframework.http.HttpStatus;
 
@@ -38,7 +38,7 @@ public class ResponseDto<T> implements Serializable {
     }
 
     public String getMensagem() {
-        return message;
+        return this.message;
     }
 
     public ResponseDto<T> setMessage(String message) {
@@ -47,7 +47,7 @@ public class ResponseDto<T> implements Serializable {
     }
 
     public T getData() {
-        return data;
+        return this.data;
     }
 
     public ResponseDto<T> setData(T data) {
@@ -56,7 +56,7 @@ public class ResponseDto<T> implements Serializable {
     }
 
     public Integer getStatus() {
-        return status;
+        return this.status;
     }
 
     public ResponseDto<T> setStatus(HttpStatus status) {
@@ -65,11 +65,11 @@ public class ResponseDto<T> implements Serializable {
     }
 
     public URI getUri() {
-        return uri;
+        return this.uri;
     }
 
     public List<String> getErrors() {
-        return errors;
+        return this.errors;
     }
 
     public ResponseDto<T> setErrors(List<String> errors) {

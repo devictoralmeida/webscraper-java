@@ -3,6 +3,7 @@ package br.com.devictoralmeida.webscraper.java.dtos.request;
 import br.com.devictoralmeida.webscraper.java.shared.Constants;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PastOrPresent;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -21,11 +22,13 @@ public class DateRangeRequestDTO implements Serializable {
 
     @Schema(type = "string", example = "14/11/2025", pattern = Constants.BR_DATE_PATTERN)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = Constants.BR_DATE_PATTERN)
+    @NotNull(message = Constants.DATA_INICIO_INVALIDA)
     @PastOrPresent(message = Constants.DATA_INICIO_INVALIDA)
     private LocalDateTime inicio;
 
     @Schema(type = "string", example = "14/11/2025", pattern = Constants.BR_DATE_PATTERN)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = Constants.BR_DATE_PATTERN)
+    @NotNull(message = Constants.DATA_FIM_INVALIDA)
     @PastOrPresent(message = Constants.DATA_FIM_INVALIDA)
     private LocalDateTime fim;
 }

@@ -1,8 +1,8 @@
 package br.com.devictoralmeida.webscraper.java.services.impl;
 
-import br.com.devictoralmeida.webscraper.java.dtos.NewsResponseDTO;
 import br.com.devictoralmeida.webscraper.java.dtos.ParsedNewsDTO;
 import br.com.devictoralmeida.webscraper.java.dtos.PartialNewsDTO;
+import br.com.devictoralmeida.webscraper.java.dtos.response.NewsResponseDTO;
 import br.com.devictoralmeida.webscraper.java.entities.Author;
 import br.com.devictoralmeida.webscraper.java.entities.News;
 import br.com.devictoralmeida.webscraper.java.repositories.AuthorRepository;

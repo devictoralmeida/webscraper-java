@@ -1,4 +1,4 @@
-package br.com.devictoralmeida.webscraper.java.dtos;
+package br.com.devictoralmeida.webscraper.java.dtos.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

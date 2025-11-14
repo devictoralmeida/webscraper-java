@@ -1,6 +1,6 @@
 package br.com.devictoralmeida.webscraper.java.services;
 
-import br.com.devictoralmeida.webscraper.java.dtos.NewsResponseDTO;
+import br.com.devictoralmeida.webscraper.java.dtos.response.NewsResponseDTO;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;

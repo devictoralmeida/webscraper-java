@@ -1,4 +1,4 @@
-package br.com.devictoralmeida.webscraper.java.dtos;
+package br.com.devictoralmeida.webscraper.java.dtos.response;
 
 import br.com.devictoralmeida.webscraper.java.entities.Author;
 import br.com.devictoralmeida.webscraper.java.shared.utils.DateUtils;
