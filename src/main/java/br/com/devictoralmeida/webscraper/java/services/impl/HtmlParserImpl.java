@@ -2,6 +2,7 @@ package br.com.devictoralmeida.webscraper.java.services.impl;
 
 import br.com.devictoralmeida.webscraper.java.dtos.ParsedNewsDTO;
 import br.com.devictoralmeida.webscraper.java.dtos.PartialNewsDTO;
+import br.com.devictoralmeida.webscraper.java.exception.NegocioException;
 import br.com.devictoralmeida.webscraper.java.services.HtmlParser;
 import br.com.devictoralmeida.webscraper.java.shared.utils.DateUtils;
 import lombok.RequiredArgsConstructor;
@@ -44,7 +45,7 @@ public class HtmlParserImpl implements HtmlParser {
             );
         } catch (Exception e) {
             log.error("Falha ao parsear HTML da URL: {}", partialNews.getUrl(), e);
-            throw new RuntimeException("Falha ao parsear Jsoup da URL: " + partialNews.getUrl(), e);
+            throw new NegocioException("Falha ao parsear Jsoup da URL: " + partialNews.getUrl());
         }
     }
 

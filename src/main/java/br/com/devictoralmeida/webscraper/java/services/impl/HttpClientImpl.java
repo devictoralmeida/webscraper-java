@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
@@ -60,24 +59,6 @@ public class HttpClientImpl implements HttpClient {
             return this.objectMapper.convertValue(response, responseType);
         } catch (Exception e) {
             this.log.error("Erro durante requisição de POST para url: {}, erro: {}", url, e.getMessage());
-            throw new RuntimeException("Error during request: " + e.getMessage(), e);
-        }
-    }
-
-    @Override
-    public <T> T makePostRequest(String url, Object body, ParameterizedTypeReference<T> responseType, Map<String, String> queryParams, Map<String, String> headers) {
-        try {
-            return this.webClient.post()
-                    .uri(buildUri(url, queryParams).build().toUri())
-                    .headers(httpHeaders -> addHeaders(httpHeaders, headers))
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .bodyValue(body)
-                    .retrieve()
-                    .bodyToMono(responseType)
-                    .timeout(Duration.ofMillis(this.timeout))
-                    .block();
-        } catch (Exception e) {
-            this.log.error("Erro durante requisição de GET para url: {}, erro: {}", url, e.getMessage());
             throw new RuntimeException("Error during request: " + e.getMessage(), e);
         }
     }

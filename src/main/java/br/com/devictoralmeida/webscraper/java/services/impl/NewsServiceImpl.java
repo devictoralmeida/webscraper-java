@@ -3,6 +3,7 @@ package br.com.devictoralmeida.webscraper.java.services.impl;
 import br.com.devictoralmeida.webscraper.java.dtos.request.DateRangeRequestDTO;
 import br.com.devictoralmeida.webscraper.java.dtos.response.AuthorNewsCountResponseDTO;
 import br.com.devictoralmeida.webscraper.java.dtos.response.NewsResponseDTO;
+import br.com.devictoralmeida.webscraper.java.exception.ParametrosDeConsultaInvalidosException;
 import br.com.devictoralmeida.webscraper.java.repositories.AuthorRepository;
 import br.com.devictoralmeida.webscraper.java.repositories.NewsRepository;
 import br.com.devictoralmeida.webscraper.java.services.NewsService;
@@ -27,6 +28,7 @@ public class NewsServiceImpl implements NewsService {
 
     @Override
     public List<AuthorNewsCountResponseDTO> findTopAuthorsByDateRange(DateRangeRequestDTO dto) {
+        validateDateRange(dto);
         return this.authorRepository.findAuthorsWithMostPublicationsOnDateRange(
                 dto.getInicio().with(LocalTime.MIN),
                 dto.getFim().with(LocalTime.MAX)
@@ -35,6 +37,7 @@ public class NewsServiceImpl implements NewsService {
 
     @Override
     public List<NewsResponseDTO> findNewsByAuthorAndDateRange(Long authorId, DateRangeRequestDTO dto) {
+        validateDateRange(dto);
         return this.newsRepository.findNewsByAuthorAndDateRange(
                         authorId,
                         dto.getInicio().with(LocalTime.MIN),
@@ -42,5 +45,11 @@ public class NewsServiceImpl implements NewsService {
                 ).stream()
                 .map(NewsResponseDTO::new)
                 .toList();
+    }
+
+    private void validateDateRange(DateRangeRequestDTO dto) {
+        if (dto.getInicio().isAfter(dto.getFim())) {
+            throw new ParametrosDeConsultaInvalidosException("A data de início não pode ser posterior à data de fim.");
+        }
     }
 }

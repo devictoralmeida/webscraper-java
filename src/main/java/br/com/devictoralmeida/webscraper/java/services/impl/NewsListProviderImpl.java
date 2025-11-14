@@ -1,6 +1,7 @@
 package br.com.devictoralmeida.webscraper.java.services.impl;
 
 import br.com.devictoralmeida.webscraper.java.dtos.PartialNewsDTO;
+import br.com.devictoralmeida.webscraper.java.exception.NegocioException;
 import br.com.devictoralmeida.webscraper.java.services.HttpClient;
 import br.com.devictoralmeida.webscraper.java.services.NewsListProvider;
 import br.com.devictoralmeida.webscraper.java.shared.Constants;
@@ -143,7 +144,7 @@ public class NewsListProviderImpl implements NewsListProvider {
             }
         } catch (Exception e) {
             log.error("Erro ao parsear JSON da API", e);
-            throw new RuntimeException("Erro ao parsear JSON da API", e);
+            throw new NegocioException("Erro ao parsear JSON da API");
         }
         log.info("Encontradas {} notícias na API.", result.size());
         return result;
