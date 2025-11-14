@@ -1,5 +1,6 @@
 package br.com.devictoralmeida.webscraper.java.entities;
 
+import br.com.devictoralmeida.webscraper.java.dtos.PartialNewsDTO;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -35,11 +36,12 @@ public class News implements Serializable {
     @Column(name = "subtitle")
     private String subtitle;
 
-    @Column(name = "author")
-    private String author;
-
     @Column(name = "content", columnDefinition = "TEXT", nullable = false)
     private String content;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "author_id", referencedColumnName = "id")
+    private Author author;
 
     @Column(name = "publish_at", nullable = false)
     private LocalDateTime publishDate;
@@ -52,12 +54,21 @@ public class News implements Serializable {
         this.title = title;
     }
 
-    public News(String url, String title, String subtitle, String author, String content, LocalDateTime publishDate) {
+    public News(String url, String title, String subtitle, String content, LocalDateTime publishDate, Author author) {
         this.url = url;
         this.title = title;
         this.subtitle = subtitle;
-        this.author = author;
         this.content = content;
         this.publishDate = publishDate;
+        this.author = author;
+    }
+
+    public News(PartialNewsDTO dto, String subtitle, String content, LocalDateTime publishDate, Author author) {
+        this.url = dto.getUrl();
+        this.title = dto.getTitle();
+        this.subtitle = subtitle;
+        this.content = content;
+        this.publishDate = publishDate;
+        this.author = author;
     }
 }

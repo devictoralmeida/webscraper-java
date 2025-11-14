@@ -1,5 +1,6 @@
 package br.com.devictoralmeida.webscraper.java.services.impl;
 
+import br.com.devictoralmeida.webscraper.java.entities.Author;
 import br.com.devictoralmeida.webscraper.java.entities.News;
 import br.com.devictoralmeida.webscraper.java.services.HtmlParser;
 import lombok.RequiredArgsConstructor;
@@ -35,7 +36,7 @@ public class HtmlParserImpl implements HtmlParser {
 
             // Abordagem segura para o autor
             Element authorElement = doc.selectFirst("div[data-ds-component='author-bio'] a");
-            String author = (authorElement != null) ? authorElement.text() : null; // Use null se não encontrar
+            Author author = (authorElement != null) ? new Author(authorElement.text()) : null;
 
             String content = "";
             Element articleElement = doc.selectFirst("article[data-ds-component='article']");
@@ -60,9 +61,9 @@ public class HtmlParserImpl implements HtmlParser {
                     partialNews.getUrl(),
                     partialNews.getTitle(),
                     subtitle,
-                    author,
                     content,
-                    date
+                    date,
+                    author
             );
         } catch (IOException e) {
             throw new RuntimeException("Falha ao fazer o parse do Jsoup na URL: " + url, e);

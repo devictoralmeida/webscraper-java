@@ -39,16 +39,9 @@ public class ScraperServiceImpl implements ScraperService {
             try {
                 log.info("Processando notícia: {}", news.getTitle());
 
-                // 2. Baixa o HTML da notícia individual
-//                String rawHtml = this.fetcher.fetchHtmlContent(news.getUrl());
-
-                // 3. Faz o parse dos detalhes (Autor, Data, Conteúdo)
                 News completeNews = this.parser.parseNewsDetails(news.getUrl(), news);
                 entitiesToSave.add(completeNews);
 
-//                savedEntities.add(repository.save(completeNews));
-
-                // Pequeno delay para ser gentil com o servidor (opcional)
                 Thread.sleep(this.delay);
             } catch (Exception e) {
                 log.error("Falha ao processar notícia: {}", news.getUrl(), e);

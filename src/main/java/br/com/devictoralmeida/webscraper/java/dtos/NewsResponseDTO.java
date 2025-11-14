@@ -1,11 +1,12 @@
 package br.com.devictoralmeida.webscraper.java.dtos;
 
 import br.com.devictoralmeida.webscraper.java.entities.News;
+import br.com.devictoralmeida.webscraper.java.shared.utils.DateUtils;
 import lombok.Getter;
 
 import java.io.Serial;
 import java.io.Serializable;
-import java.time.format.DateTimeFormatter;
+import java.util.Optional;
 
 @Getter
 public final class NewsResponseDTO implements Serializable {
@@ -19,8 +20,8 @@ public final class NewsResponseDTO implements Serializable {
     private final String title;
 
     private final String subtitle;
-    
-    private final String author;
+
+    private final AuthorResponseDTO author;
 
     private final String content;
 
@@ -33,9 +34,9 @@ public final class NewsResponseDTO implements Serializable {
         this.url = news.getUrl();
         this.title = news.getTitle();
         this.subtitle = news.getSubtitle();
-        this.author = news.getAuthor();
+        this.author = Optional.ofNullable(news.getAuthor()).map(AuthorResponseDTO::new).orElse(null);
         this.content = news.getContent();
-        this.publishDate = news.getPublishDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
-        this.createdAt = news.getCreatedAt().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
+        this.publishDate = DateUtils.format(news.getPublishDate());
+        this.createdAt = DateUtils.format(news.getCreatedAt());
     }
 }
