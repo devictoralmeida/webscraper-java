@@ -4,6 +4,7 @@ import br.com.devictoralmeida.webscraper.java.services.HttpClient;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.time.Duration;
 import java.util.Map;
 
 @Service
@@ -18,6 +20,9 @@ public class HttpClientImpl implements HttpClient {
     private final Logger log = LoggerFactory.getLogger(HttpClientImpl.class);
     private final WebClient webClient;
     private final ObjectMapper objectMapper;
+
+    @Value("${scraper.timeout.ms}")
+    private int timeout;
 
     public HttpClientImpl(WebClient.Builder webClient, ObjectMapper objectMapper) {
         this.webClient = webClient.build();
@@ -32,6 +37,7 @@ public class HttpClientImpl implements HttpClient {
                     .headers(httpHeaders -> addHeaders(httpHeaders, headers))
                     .retrieve()
                     .bodyToMono(responseType)
+                    .timeout(Duration.ofMillis(this.timeout))
                     .block();
         } catch (Exception exception) {
             this.log.error("Erro durante requisição de GET para url: {}, erro: {}", url, exception.getMessage());
@@ -49,6 +55,7 @@ public class HttpClientImpl implements HttpClient {
                     .bodyValue(body)
                     .retrieve()
                     .bodyToMono(responseType)
+                    .timeout(Duration.ofMillis(this.timeout))
                     .block();
             return this.objectMapper.convertValue(response, responseType);
         } catch (Exception e) {
@@ -67,6 +74,7 @@ public class HttpClientImpl implements HttpClient {
                     .bodyValue(body)
                     .retrieve()
                     .bodyToMono(responseType)
+                    .timeout(Duration.ofMillis(this.timeout))
                     .block();
         } catch (Exception e) {
             this.log.error("Erro durante requisição de GET para url: {}, erro: {}", url, e.getMessage());
