@@ -20,7 +20,7 @@ public class NewsControllerImpl implements NewsController {
 
     @Override
     @GetMapping
-    public ResponseEntity<?> fetchNews(@RequestParam(name = "limit", defaultValue = "12") int pageLimit) {
+    public ResponseEntity<?> fetchNews(@RequestParam(name = "limit", defaultValue = "15") int pageLimit) {
         return ResponseEntity.status(HttpStatus.OK).body(ResponseDto.fromData(this.service.execute(pageLimit), HttpStatus.OK, Constants.MENSAGEM_SALVO_SUCESSO));
     }
 }

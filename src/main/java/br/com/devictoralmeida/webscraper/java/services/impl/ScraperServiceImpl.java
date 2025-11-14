@@ -3,7 +3,6 @@ package br.com.devictoralmeida.webscraper.java.services.impl;
 import br.com.devictoralmeida.webscraper.java.dtos.NewsResponseDTO;
 import br.com.devictoralmeida.webscraper.java.entities.News;
 import br.com.devictoralmeida.webscraper.java.repositories.NewsRepository;
-import br.com.devictoralmeida.webscraper.java.services.HtmlFetcher;
 import br.com.devictoralmeida.webscraper.java.services.HtmlParser;
 import br.com.devictoralmeida.webscraper.java.services.NewsListProvider;
 import br.com.devictoralmeida.webscraper.java.services.ScraperService;
@@ -20,13 +19,11 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ScraperServiceImpl implements ScraperService {
     private final NewsListProvider listProvider;
-    private final HtmlFetcher fetcher;
     private final HtmlParser parser;
     private final NewsRepository repository;
 
     @Value("${scraper.delay.ms}")
     private int delay;
-
 
     @Override
     public List<NewsResponseDTO> execute(int pageLimit) {
