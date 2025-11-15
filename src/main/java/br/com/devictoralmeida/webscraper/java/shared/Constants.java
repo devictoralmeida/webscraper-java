@@ -10,6 +10,8 @@ public final class Constants {
     public static final String DATA_INICIO_INVALIDA = "Data de início inválida.";
     public static final String DATA_FIM_INVALIDA = "Data de fim inválida.";
     public static final String AUTOR_NAO_ENCONTRADO = "Autor não encontrado.";
+    public static final String MERCADOS_PATH = "/mercados/";
+    public static final String INTERVALO_DATA_INVALIDO = "Intervalo de datas inválido: a data de início não pode ser posterior à data de fim.";
 
     private Constants() {
     }

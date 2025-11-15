@@ -63,7 +63,7 @@ public class NewsServiceImpl implements NewsService {
 
     private void validateDateRange(DateRangeRequestDTO dto) {
         if (dto.getInicio().isAfter(dto.getFim())) {
-            throw new ParametrosDeConsultaInvalidosException("A data de início não pode ser posterior à data de fim.");
+            throw new ParametrosDeConsultaInvalidosException(Constants.INTERVALO_DATA_INVALIDO);
         }
     }
 }

@@ -23,7 +23,7 @@ public class HtmlParserImpl implements HtmlParser {
     @Override
     public ParsedNewsDTO parseNewsDetails(String html, PartialNewsDTO partialNews) { // Assinatura mudou
         try {
-            Document doc = Jsoup.parse(html);
+            Document doc = parseHtmlContent(html);
 
             String subtitle = Optional.ofNullable(doc.selectFirst("div[data-ds-component='article-title'] > div"))
                     .map(Element::text)
@@ -47,6 +47,11 @@ public class HtmlParserImpl implements HtmlParser {
             log.error("Falha ao parsear HTML da URL: {}", partialNews.getUrl(), e);
             throw new NegocioException("Falha ao parsear Jsoup da URL: " + partialNews.getUrl());
         }
+    }
+
+    @Override
+    public Document parseHtmlContent(String html) {
+        return Jsoup.parse(html);
     }
 
     private String getContent(Document doc) {

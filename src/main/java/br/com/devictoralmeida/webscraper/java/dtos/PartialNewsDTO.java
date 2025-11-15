@@ -14,4 +14,19 @@ public final class PartialNewsDTO implements Serializable {
 
     private final String url;
     private final String title;
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        PartialNewsDTO that = (PartialNewsDTO) o;
+        return getUrl().equals(that.getUrl());
+    }
+
+    @Override
+    public int hashCode() {
+        return getUrl().hashCode();
+    }
 }

@@ -1,6 +1,6 @@
 package br.com.devictoralmeida.webscraper.java.entities;
 
-import br.com.devictoralmeida.webscraper.java.dtos.PartialNewsDTO;
+import br.com.devictoralmeida.webscraper.java.dtos.ParsedNewsDTO;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -49,17 +49,12 @@ public class News implements Serializable {
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
-    public News(String url, String title) {
-        this.url = url;
-        this.title = title;
-    }
-
-    public News(PartialNewsDTO dto, String subtitle, String content, LocalDateTime publishDate, Author author) {
-        this.url = dto.getUrl();
-        this.title = dto.getTitle();
-        this.subtitle = subtitle;
-        this.content = content;
-        this.publishDate = publishDate;
+    public News(ParsedNewsDTO dto, Author author) {
+        this.url = dto.getPartialNews().getUrl();
+        this.title = dto.getPartialNews().getTitle();
+        this.subtitle = dto.getSubtitle();
+        this.content = dto.getContent();
+        this.publishDate = dto.getPublishDate();
         this.author = author;
     }
 }

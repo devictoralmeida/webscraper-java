@@ -2,6 +2,7 @@ package br.com.devictoralmeida.webscraper.java.services.impl;
 
 import br.com.devictoralmeida.webscraper.java.dtos.PartialNewsDTO;
 import br.com.devictoralmeida.webscraper.java.exception.NegocioException;
+import br.com.devictoralmeida.webscraper.java.services.HtmlParser;
 import br.com.devictoralmeida.webscraper.java.services.HttpClient;
 import br.com.devictoralmeida.webscraper.java.services.NewsListProvider;
 import br.com.devictoralmeida.webscraper.java.shared.Constants;
@@ -9,26 +10,26 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class NewsListProviderImpl implements NewsListProvider {
     private final HttpClient httpClient;
+    private final HtmlParser parser;
     private final ObjectMapper objectMapper;
 
-    // Valores do seu application.properties
     @Value("${api.url.mercados}")
     private String apiUrlMercados;
 
@@ -38,49 +39,34 @@ public class NewsListProviderImpl implements NewsListProvider {
     @Value("${api.baseurl}")
     private String baseUrl;
 
-    @Value("${user.agent}")
-    private String userAgent;
-
 
     @Override
     public List<PartialNewsDTO> fetchNewsList(int pageLimit) {
-        // 1. Busca as notícias iniciais "queimadas" no HTML
         List<PartialNewsDTO> initialNews = this.fetchInitialNewsFromHtml();
 
-        // 2. Verifica se o limite já foi atingido
         if (pageLimit <= initialNews.size()) {
             log.info("Limite de {} atingido apenas com notícias iniciais.", pageLimit);
             return initialNews.stream().limit(pageLimit).toList();
         }
 
-        // 3. Se precisar de mais, busca na API
         log.info("Buscando notícias adicionais na API para atingir o limite de {}", pageLimit);
         List<PartialNewsDTO> apiNews = this.fetchApiNews();
 
-        // 4. Combina, remove duplicatas (mantendo a ordem) e aplica o limite final
-        // Usamos LinkedHashMap para manter a ordem e garantir URLs únicas
-        Map<String, PartialNewsDTO> uniqueNewsMap = new LinkedHashMap<>();
+        Set<PartialNewsDTO> uniqueNews = new HashSet<>(initialNews);
+        uniqueNews.addAll(apiNews);
 
-        // Adiciona as iniciais primeiro
-        initialNews.forEach(news -> uniqueNewsMap.putIfAbsent(news.getUrl(), news));
-        // Adiciona as da API (só as que não estiverem no mapa)
-        apiNews.forEach(news -> uniqueNewsMap.putIfAbsent(news.getUrl(), news));
-
-        List<PartialNewsDTO> finalList = uniqueNewsMap.values().stream().limit(pageLimit).toList();
+        List<PartialNewsDTO> finalList = uniqueNews.stream().limit(pageLimit).toList();
         log.info("Encontradas {} notícias únicas no total para processar.", finalList.size());
         return finalList;
     }
 
     private List<PartialNewsDTO> fetchInitialNewsFromHtml() {
-        List<PartialNewsDTO> result = new ArrayList<>();
-        String initialPageUrl = this.baseUrl + "/mercados/";
+        String initialPageUrl = this.baseUrl + Constants.MERCADOS_PATH;
         log.info("Buscando lista de notícias iniciais do HTML: {}", initialPageUrl);
 
         try {
-            Document doc = Jsoup.connect(initialPageUrl)
-                    .userAgent(this.userAgent)
-                    .timeout(10000) // 10 segundos de timeout
-                    .get();
+            String htmlString = this.httpClient.makeGetRequest(initialPageUrl, String.class, null, null);
+            Document doc = this.parser.parseHtmlContent(htmlString);
 
             String selector = """
                             div[data-ds-component='card-xl'] h2 a,
@@ -88,65 +74,53 @@ public class NewsListProviderImpl implements NewsListProvider {
                             div.related-link a
                     """;
 
-            for (Element link : doc.select(selector)) {
-                String url = link.attr("href");
-                String title = link.text();
+            List<PartialNewsDTO> result = doc.select(selector).stream()
+                    .filter(entry -> !ObjectUtils.isEmpty(entry.attr("href")) && !ObjectUtils.isEmpty(entry.text()))
+                    .map(link -> new PartialNewsDTO(
+                            sanitizeUrl(link.attr("href").trim()),
+                            link.text().trim()
+                    ))
+                    .collect(Collectors.toList());
 
-                // Ignora links que não são de notícias (ex: "Mercados")
-                if (title.equalsIgnoreCase("Mercados")) {
-                    continue;
-                }
-
-                // Garante que a URL é absoluta (caso venha /mercados/...)
-                // E trata links do "livenews" que podem ter # no meio
-                if (url.contains("#")) {
-                    url = url.substring(0, url.indexOf('#'));
-                }
-
-                if (!url.startsWith("http")) {
-                    url = this.baseUrl + url;
-                }
-
-                result.add(new PartialNewsDTO(url, title));
-            }
             log.info("Encontradas {} notícias iniciais no HTML.", result.size());
             return result;
-
-        } catch (IOException e) {
-            log.error("Falha ao raspar HTML inicial da página: {}", initialPageUrl, e);
-            return result;
+        } catch (Exception e) {
+            log.error("Falha ao processar HTML da página inicial: {}", initialPageUrl, e);
+            throw new NegocioException("Falha ao processar HTML da página inicial: " + e.getMessage());
         }
     }
 
     private List<PartialNewsDTO> fetchApiNews() {
-        Map<String, Object> requestBody = Map.of(
+        Map<String, Object> requestBody = getRequestBody();
+        log.info("Buscando lista de notícias da API via POST...");
+
+        try {
+            String jsonResponse = this.httpClient.makePostRequest(this.apiUrlMercados, requestBody, String.class, null, null);
+            JsonNode root = this.objectMapper.readTree(jsonResponse);
+
+            return StreamSupport.stream(root.spliterator(), false)
+                    .map(node -> Map.entry(
+                            sanitizeUrl(node.path("post_permalink").asText("")),
+                            node.path("post_title").asText("")
+                    ))
+                    .filter(entry -> !ObjectUtils.isEmpty(entry.getKey()) && !ObjectUtils.isEmpty(entry.getValue()))
+                    .map(entry -> new PartialNewsDTO(entry.getKey(), entry.getValue()))
+                    .toList();
+        } catch (Exception e) {
+            log.error("Erro durante o parse do JSON da API", e);
+            throw new NegocioException("Erro durante o parse do JSON da API");
+        }
+    }
+
+    private Map<String, Object> getRequestBody() {
+        return Map.of(
                 "post_id", this.postIdMercados,
-                "categories", List.of(Constants.UM), //
+                "categories", List.of(Constants.UM),
                 "tags", List.of()
         );
+    }
 
-        log.info("Buscando lista de notícias da API via POST...");
-        String jsonResponse = this.httpClient.makePostRequest(
-                this.apiUrlMercados,
-                requestBody,
-                String.class,
-                null,
-                null
-        );
-
-        List<PartialNewsDTO> result = new ArrayList<>();
-        try {
-            JsonNode root = this.objectMapper.readTree(jsonResponse);
-            for (JsonNode node : root) {
-                String url = node.get("post_permalink").asText();
-                String title = node.get("post_title").asText();
-                result.add(new PartialNewsDTO(url, title));
-            }
-        } catch (Exception e) {
-            log.error("Erro ao parsear JSON da API", e);
-            throw new NegocioException("Erro ao parsear JSON da API");
-        }
-        log.info("Encontradas {} notícias na API.", result.size());
-        return result;
+    private String sanitizeUrl(String url) {
+        return url.contains("#") ? url.substring(0, url.indexOf('#')) : url;
     }
 }
