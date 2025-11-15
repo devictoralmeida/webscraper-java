@@ -2,12 +2,13 @@ package br.com.devictoralmeida.webscraper.java.exception;
 
 import br.com.devictoralmeida.webscraper.java.dtos.response.ResponseDto;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
+import org.springframework.context.support.DefaultMessageSourceResolvable;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
-import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -20,10 +21,19 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 
 import java.time.format.DateTimeParseException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
+    @ExceptionHandler({DataIntegrityViolationException.class})
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ResponseEntity<?> handlePSQLException(DataIntegrityViolationException ex, WebRequest request) {
+        this.logger.error(" =========== DataIntegrityViolationException =========== " + ex.getMostSpecificCause().getMessage());
+        ResponseDto<Object> obj = ResponseDto.fromData(null, HttpStatus.CONFLICT, GlobalExceptionConstants.PSQL_ERROR_MESSAGE, Collections.singletonList(ex.getMostSpecificCause().getMessage()));
+        return handleExceptionInternal(ex, obj, new HttpHeaders(), HttpStatus.CONFLICT, request);
+    }
+
     @ExceptionHandler(ResponseStatusException.class)
     public ResponseEntity<?> handleWithResponseStatusException(ResponseStatusException ex) {
         return ResponseEntity.status(ex.getStatusCode()).body(ex.getReason());
@@ -41,15 +51,19 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @Override
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
     protected ResponseEntity<Object> handleMethodArgumentNotValid(
-            MethodArgumentNotValidException ex,
-            HttpHeaders headers,
-            HttpStatusCode status,
-            WebRequest request) {
+            MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+        this.logger.error(" =============== DTO fields that failed validation ==========================");
 
-        var errors = ex.getFieldErrors();
-        ValidationResponse response = new ValidationResponse(errors);
-        return handleExceptionInternal(ex, response, headers, HttpStatus.BAD_REQUEST, request);
+        List<String> erros = ex.getBindingResult().getFieldErrors().stream()
+                .map(DefaultMessageSourceResolvable::getDefaultMessage)
+                .toList();
+
+        ResponseDto<Object> res = ResponseDto.fromData(null, HttpStatus.BAD_REQUEST,
+                GlobalExceptionConstants.CHECK_FIELDS_MESSAGE, erros);
+
+        return handleExceptionInternal(ex, res, headers, HttpStatus.BAD_REQUEST, request);
     }
 
     @Override
@@ -168,19 +182,5 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
         ResponseDto<Object> obj = ResponseDto.fromData(null, HttpStatus.NOT_FOUND, error, Arrays.asList(field));
         return handleExceptionInternal(ex, obj, new HttpHeaders(), HttpStatus.NOT_FOUND, request);
-    }
-
-    private record ValidationResponse(String message, List<ValidationError> errors) {
-        public ValidationResponse(List<FieldError> errors) {
-            this(GlobalExceptionConstants.MENSAGEM_VERIFICAR_CAMPOS,
-                    errors.stream().map(ValidationError::new).toList()
-            );
-        }
-
-        private record ValidationError(String field, String message) {
-            public ValidationError(FieldError error) {
-                this(error.getField(), error.getDefaultMessage());
-            }
-        }
     }
 }
