@@ -26,7 +26,7 @@ public class NewsControllerImpl implements NewsController {
     @Override
     @PostMapping("/relatorios/autores")
     public ResponseEntity<?> getTopAuthorsByDateRange(@Valid @RequestBody DateRangeRequestDTO dto) {
-        return ResponseEntity.status(HttpStatus.OK).body(ResponseDto.fromData(this.service.findTopAuthorsByDateRange(dto), HttpStatus.OK, null));
+        return ResponseEntity.status(HttpStatus.OK).body(ResponseDto.fromData(this.service.findTopAuthorsByDateRange(dto), HttpStatus.OK, Constants.MENSAGEM_AUTORES_ENCONTRADOS_SUCESSO));
     }
 
     @Override
@@ -34,6 +34,6 @@ public class NewsControllerImpl implements NewsController {
     public ResponseEntity<?> getNewsByAuthorAndDateRange(
             @PathVariable Long authorId,
             @Valid @RequestBody DateRangeRequestDTO dto) {
-        return ResponseEntity.status(HttpStatus.OK).body(ResponseDto.fromData(this.service.findNewsByAuthorAndDateRange(authorId, dto), HttpStatus.OK, null));
+        return ResponseEntity.status(HttpStatus.OK).body(ResponseDto.fromData(this.service.findNewsByAuthorAndDateRange(authorId, dto), HttpStatus.OK, Constants.MENSAGEM_NOTICIAS_ENCONTRADAS_SUCESSO));
     }
 }
