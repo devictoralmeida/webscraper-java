@@ -9,6 +9,7 @@ public final class Constants {
     public static final int DEZ_MB = 10 * 1024 * 1024;
     public static final String DATA_INICIO_INVALIDA = "Data de início inválida.";
     public static final String DATA_FIM_INVALIDA = "Data de fim inválida.";
+    public static final String AUTOR_NAO_ENCONTRADO = "Autor não encontrado.";
 
     private Constants() {
     }
