@@ -2,7 +2,6 @@ package br.com.devictoralmeida.webscraper.java.dtos.response;
 
 import org.springframework.http.HttpStatus;
 
-import java.io.Serial;
 import java.io.Serializable;
 import java.net.URI;
 import java.util.ArrayList;
@@ -10,39 +9,40 @@ import java.util.List;
 
 public class ResponseDto<T> implements Serializable {
 
-    @Serial
-    private static final long serialVersionUID = -6746702443721295550L;
+    private static final long serialVersionUID = 920693103078426185L;
 
     private transient T data;
     private List<String> errors = new ArrayList<>();
-    private String message;
+    private final List<String> warns = new ArrayList<>();
+    private final List<String> infos = new ArrayList<>();
+    private String mensagem;
     private URI uri;
     private Integer status;
 
     ResponseDto() {
     }
 
-    public static <T> ResponseDto<T> fromData(T data, HttpStatus status, String message) {
+    public static <T> ResponseDto<T> fromData(T data, HttpStatus status, String mensagem) {
         return new ResponseDto<T>()
                 .setData(data)
                 .setStatus(status)
-                .setMessage(message);
+                .setMensagem(mensagem);
     }
 
-    public static <T> ResponseDto<T> fromData(T data, HttpStatus status, String message, List<String> errors) {
+    public static <T> ResponseDto<T> fromData(T data, HttpStatus status, String mensagem, List<String> errors) {
         return new ResponseDto<T>()
                 .setData(data)
                 .setStatus(status)
-                .setMessage(message)
+                .setMensagem(mensagem)
                 .setErrors(errors);
     }
 
     public String getMensagem() {
-        return this.message;
+        return this.mensagem;
     }
 
-    public ResponseDto<T> setMessage(String message) {
-        this.message = message;
+    public ResponseDto<T> setMensagem(String mensagem) {
+        this.mensagem = mensagem;
         return this;
     }
 
@@ -76,5 +76,13 @@ public class ResponseDto<T> implements Serializable {
         this.errors = errors;
         return this;
     }
-}
 
+    public List<String> getWarns() {
+        return this.warns;
+    }
+
+    public List<String> getInfos() {
+        return this.infos;
+    }
+
+}

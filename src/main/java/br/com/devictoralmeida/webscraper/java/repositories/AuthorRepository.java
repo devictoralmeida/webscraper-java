@@ -14,19 +14,19 @@ import java.util.Set;
 @Repository
 public interface AuthorRepository extends JpaRepository<Author, Long> {
     @Query("""
-                    SELECT NEW br.com.devictoralmeida.webscraper.java.dtos.response.AuthorNewsCountResponseDTO(
-                        n.author.id,
-                        n.author.name,
-                        COUNT(n.id)
-                    )
-                    FROM News n
-                    WHERE n.publishDate >= :startOfDay AND n.publishDate <= :endOfDay
-                    GROUP BY n.author.id, n.author.name
-                    ORDER BY COUNT(n.id) DESC
+            SELECT new br.com.devictoralmeida.webscraper.java.dtos.response.AuthorNewsCountResponseDTO(
+                a.id, a.name, COUNT(n.id)
+            )
+            FROM Author a
+            JOIN a.newsList n
+            WHERE n.publishDate >= :startDate
+            AND n.publishDate <= :endDate
+            GROUP BY a.id, a.name
+            ORDER BY COUNT(n.id) DESC
             """)
     List<AuthorNewsCountResponseDTO> findAuthorsWithMostPublicationsOnDateRange(
-            @Param("startOfDay") LocalDateTime startOfDay,
-            @Param("endOfDay") LocalDateTime endOfDay
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate
     );
 
     @Query("SELECT a FROM Author a WHERE a.name IN :names")

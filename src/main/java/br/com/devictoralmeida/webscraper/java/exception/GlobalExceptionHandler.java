@@ -10,13 +10,11 @@ import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
-import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import java.time.format.DateTimeParseException;
@@ -32,22 +30,6 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         this.logger.error(" =========== DataIntegrityViolationException =========== " + ex.getMostSpecificCause().getMessage());
         ResponseDto<Object> obj = ResponseDto.fromData(null, HttpStatus.CONFLICT, GlobalExceptionConstants.PSQL_ERROR_MESSAGE, Collections.singletonList(ex.getMostSpecificCause().getMessage()));
         return handleExceptionInternal(ex, obj, new HttpHeaders(), HttpStatus.CONFLICT, request);
-    }
-
-    @ExceptionHandler(ResponseStatusException.class)
-    public ResponseEntity<?> handleWithResponseStatusException(ResponseStatusException ex) {
-        return ResponseEntity.status(ex.getStatusCode()).body(ex.getReason());
-    }
-
-    @Override
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    protected ResponseEntity<Object> handleMissingServletRequestParameter(
-            MissingServletRequestParameterException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
-        this.logger.error(" =============== MissingServletRequestParameterException ==========================");
-        String field = ex.getParameterName();
-        String error = GlobalExceptionConstants.MENSAGEM_PARAMETRO_OBRIGATORIO_NAO_INFORMADO + ex.getParameterName();
-        ResponseDto<Object> response = ResponseDto.fromData(null, HttpStatus.BAD_REQUEST, error, Arrays.asList(field));
-        return handleExceptionInternal(ex, response, headers, HttpStatus.BAD_REQUEST, request);
     }
 
     @Override
@@ -158,18 +140,6 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
         ResponseDto<Object> obj = ResponseDto.fromData(null, HttpStatus.UNAUTHORIZED, error, Arrays.asList(field));
         return handleExceptionInternal(ex, obj, new HttpHeaders(), HttpStatus.UNAUTHORIZED, request);
-    }
-
-    @ExceptionHandler({ProibidoException.class})
-    @ResponseStatus(HttpStatus.FORBIDDEN)
-    public ResponseEntity<?> handleProibidoException(ProibidoException ex, WebRequest request) {
-        this.logger.error(" =============== ProibidoException ==========================");
-
-        String error = GlobalExceptionConstants.MENSAGEM_PROIBIDO;
-        String field = ex.getMessage();
-
-        ResponseDto<Object> obj = ResponseDto.fromData(null, HttpStatus.FORBIDDEN, error, Arrays.asList(field));
-        return handleExceptionInternal(ex, obj, new HttpHeaders(), HttpStatus.FORBIDDEN, request);
     }
 
     @ExceptionHandler({RecursoNaoEncontradoException.class})

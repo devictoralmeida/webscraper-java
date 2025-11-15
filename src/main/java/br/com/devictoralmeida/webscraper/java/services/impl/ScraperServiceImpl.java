@@ -83,7 +83,7 @@ public class ScraperServiceImpl implements ScraperService {
                     .toList();
 
             return futures.stream()
-                    .map(this::getFutureResult)
+                    .map(this::getFutureResult) // Espera todas as tarefas serem concluídas
                     .filter(Objects::nonNull)
                     .toList();
 
