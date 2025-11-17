@@ -19,7 +19,7 @@ public class NewsControllerImpl implements NewsController {
 
     @Override
     @GetMapping("/buscar")
-    public ResponseEntity<?> fetchNews(@RequestParam(name = "limit", defaultValue = "15") int pageLimit) {
+    public ResponseEntity<?> fetchNews(@RequestParam(name = "limit", defaultValue = "21") int pageLimit) {
         return ResponseEntity.status(HttpStatus.OK).body(ResponseDto.fromData(this.service.scrapeAndSaveNews(pageLimit), HttpStatus.OK, Constants.MENSAGEM_SALVO_SUCESSO));
     }
 
